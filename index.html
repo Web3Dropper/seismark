@@ -3,30 +3,49 @@
 <head>
   <title>SeisMark</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+  <!-- WalletConnect + Ethers -->
+  <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.min.js"></script>
+  <script src="https://unpkg.com/web3modal"></script>
+  <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 
   <style>
     body {
-      background: #0d0d0d;
+      background: radial-gradient(circle, #0d0d0d, #000);
       color: white;
       text-align: center;
       font-family: Arial;
-      margin-top: 50px;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 28px;
     }
 
     input {
-      padding: 10px;
-      width: 220px;
-      border-radius: 10px;
+      padding: 12px;
+      width: 80%;
+      border-radius: 12px;
       border: none;
+      margin-top: 10px;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 25px;
+      background: linear-gradient(45deg, #ff00ff, #00ffff);
+      color: white;
+      font-size: 16px;
     }
 
     .badge {
-      margin-top: 20px;
-      width: 150px;
-      height: 150px;
+      margin: 30px auto;
+      width: 160px;
+      height: 160px;
       border-radius: 50%;
-      padding: 5px;
+      padding: 6px;
       background: linear-gradient(45deg, #ff00ff, #00ffff);
       animation: glow 2s infinite alternate;
     }
@@ -36,19 +55,9 @@
       border-radius: 50%;
     }
 
-    button {
-      margin-top: 15px;
-      padding: 10px 25px;
-      border: none;
-      border-radius: 20px;
-      background: linear-gradient(45deg, #ff00ff, #00ffff);
-      color: white;
-      cursor: pointer;
-    }
-
     @keyframes glow {
       from { box-shadow: 0 0 10px #ff00ff; }
-      to { box-shadow: 0 0 25px #00ffff; }
+      to { box-shadow: 0 0 35px #00ffff; }
     }
   </style>
 </head>
@@ -62,7 +71,6 @@
 <p id="wallet"></p>
 
 <input id="username" placeholder="Enter X username" />
-<br>
 
 <button onclick="loadPfp()">Load PFP</button>
 
@@ -71,50 +79,38 @@
 <button onclick="mint()">Mint SeisMark</button>
 
 <script>
+let provider;
 let signer;
-let userAddress;
+let web3Modal;
 
-// 🔗 CONNECT + AUTO SEISMIC
+const providerOptions = {
+  walletconnect: {
+    package: window.WalletConnectProvider.default,
+    options: {
+      rpc: {
+        5124: "https://gcp-2.seismictest.net/rpc"
+      }
+    }
+  }
+};
+
+window.onload = function () {
+  web3Modal = new window.Web3Modal.default({
+    cacheProvider: false,
+    providerOptions
+  });
+};
+
 async function connectWallet() {
-  if (!window.ethereum) {
-    alert("Install MetaMask");
-    return;
-  }
-
-  const chainId = "0x1404";
-
-  try {
-    await window.ethereum.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId }],
-    });
-  } catch (error) {
-    await window.ethereum.request({
-      method: "wallet_addEthereumChain",
-      params: [{
-        chainId: chainId,
-        chainName: "Seismic Testnet",
-        rpcUrls: ["https://gcp-2.seismictest.net/rpc"],
-        nativeCurrency: {
-          name: "ETH",
-          symbol: "ETH",
-          decimals: 18
-        }
-      }]
-    });
-  }
-
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  await provider.send("eth_requestAccounts", []);
-
+  const instance = await web3Modal.connect();
+  provider = new ethers.providers.Web3Provider(instance);
   signer = provider.getSigner();
-  userAddress = await signer.getAddress();
 
+  const address = await signer.getAddress();
   document.getElementById("wallet").innerText =
-    "Connected: " + userAddress + " 🌊";
+    "Connected: " + address;
 }
 
-// 🖼️ LOAD PFP
 function loadPfp() {
   let user = document.getElementById("username").value;
   let url = `https://unavatar.io/twitter/${user}`;
@@ -123,7 +119,6 @@ function loadPfp() {
     `<div class="badge"><img src="${url}"/></div>`;
 }
 
-// 💰 MINT = PAYMENT
 async function mint() {
   if (!signer) {
     alert("Connect wallet first");
@@ -138,9 +133,9 @@ async function mint() {
 
     await tx.wait();
 
-    alert("✅ SeisMark Minted on Seismic 🌊");
+    alert("✅ Minted on Seismic 🌊");
   } catch (err) {
-    alert("❌ Transaction failed");
+    alert("Transaction failed");
   }
 }
 </script>
