@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SeisMark</title>
+  <style>
+    body {
+      background: #0d0d0d;
+      color: white;
+      text-align: center;
+      font-family: Arial;
+      margin-top: 50px;
+    }
+
+    input {
+      padding: 10px;
+      width: 220px;
+      border-radius: 10px;
+      border: none;
+    }
+
+    .badge {
+      margin-top: 20px;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      padding: 5px;
+      background: linear-gradient(45deg, #ff00ff, #00ffff);
+      animation: glow 2s infinite alternate;
+    }
+
+    img {
+      width: 100%;
+      border-radius: 50%;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 25px;
+      border: none;
+      border-radius: 20px;
+      background: linear-gradient(45deg, #ff00ff, #00ffff);
+      color: white;
+      cursor: pointer;
+    }
+
+    @keyframes glow {
+      from { box-shadow: 0 0 10px #ff00ff; }
+      to { box-shadow: 0 0 25px #00ffff; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>🌊 SeisMark</h1>
+<p>Proof of Seismic Contribution</p>
+
+<input id="username" placeholder="Enter X username" />
+<br>
+
+<button onclick="loadPfp()">Load PFP</button>
+
+<div id="preview"></div>
+
+<button onclick="mint()">Mint SeisMark</button>
+
+<script>
+function loadPfp() {
+  let user = document.getElementById("username").value;
+  let url = `https://unavatar.io/twitter/${user}`;
+
+  document.getElementById("preview").innerHTML =
+    `<div class="badge"><img src="${url}"/></div>`;
+}
+
+function mint() {
+  alert("🚀 SeisMark Minted (Demo)");
+}
+</script>
+
+</body>
+</html>
