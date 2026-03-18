@@ -2,6 +2,10 @@
 <html>
 <head>
   <title>SeisMark</title>
+
+  <!-- ethers library -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+
   <style>
     body {
       background: #0d0d0d;
@@ -54,6 +58,9 @@
 <h1>🌊 SeisMark</h1>
 <p>Proof of Seismic Contribution</p>
 
+<button onclick="connectWallet()">🔗 Connect Wallet</button>
+<p id="wallet"></p>
+
 <input id="username" placeholder="Enter X username" />
 <br>
 
@@ -64,6 +71,25 @@
 <button onclick="mint()">Mint SeisMark</button>
 
 <script>
+let signer;
+let userAddress;
+
+async function connectWallet() {
+  if (!window.ethereum) {
+    alert("Install MetaMask");
+    return;
+  }
+
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  await provider.send("eth_requestAccounts", []);
+
+  signer = provider.getSigner();
+  userAddress = await signer.getAddress();
+
+  document.getElementById("wallet").innerText =
+    "Connected: " + userAddress;
+}
+
 function loadPfp() {
   let user = document.getElementById("username").value;
   let url = `https://unavatar.io/twitter/${user}`;
@@ -72,8 +98,25 @@ function loadPfp() {
     `<div class="badge"><img src="${url}"/></div>`;
 }
 
-function mint() {
-  alert("🚀 SeisMark Minted (Demo)");
+// 🔥 FAKE mint (real fee transfer)
+async function mint() {
+  if (!signer) {
+    alert("Connect wallet first");
+    return;
+  }
+
+  try {
+    const tx = await signer.sendTransaction({
+      to: "YOUR_WALLET_ADDRESS", // 👈 apna address daal
+      value: ethers.utils.parseEther("0.001")
+    });
+
+    await tx.wait();
+
+    alert("✅ Mint Success (Fee Sent)");
+  } catch (err) {
+    alert("❌ Transaction failed");
+  }
 }
 </script>
 
