@@ -3,10 +3,9 @@
 <head>
   <title>SeisMark</title>
 
-  <!-- WalletConnect + Ethers -->
-  <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.min.js"></script>
-  <script src="https://unpkg.com/web3modal"></script>
-  <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+  <!-- Modern Web3 -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+  <script src="https://unpkg.com/@web3modal/standalone"></script>
 
   <style>
     body {
@@ -18,18 +17,6 @@
       padding: 20px;
     }
 
-    h1 {
-      font-size: 28px;
-    }
-
-    input {
-      padding: 12px;
-      width: 80%;
-      border-radius: 12px;
-      border: none;
-      margin-top: 10px;
-    }
-
     button {
       margin-top: 15px;
       padding: 12px 30px;
@@ -38,6 +25,13 @@
       background: linear-gradient(45deg, #ff00ff, #00ffff);
       color: white;
       font-size: 16px;
+    }
+
+    input {
+      padding: 12px;
+      width: 80%;
+      border-radius: 12px;
+      border: none;
     }
 
     .badge {
@@ -67,7 +61,7 @@
 <h1>🌊 SeisMark</h1>
 <p>Proof of Seismic Contribution</p>
 
-<button onclick="connectWallet()">🔗 Connect Wallet</button>
+<button id="connect">🔗 Connect Wallet</button>
 <p id="wallet"></p>
 
 <input id="username" placeholder="Enter X username" />
@@ -81,30 +75,67 @@
 <script>
 let provider;
 let signer;
-let web3Modal;
 
-const providerOptions = {
-  walletconnect: {
-    package: window.WalletConnectProvider.default,
-    options: {
-      rpc: {
-        5124: "https://gcp-2.seismictest.net/rpc"
-      }
-    }
+// ⚠️ IMPORTANT: projectId lena padega
+const projectId = "demo"; // 👈 baad me replace karenge
+
+const modal = new window.Web3Modal({
+  projectId,
+  chains: [{
+    chainId: 5124,
+    name: "Seismic Testnet",
+    rpcUrl: "https://gcp-2.seismictest.net/rpc",
+    nativeCurrency: "ETH"
+  }]
+});
+
+document.getElementById("connect").onclick = async () => {
+  try {
+    const walletProvider = await modal.connect();
+
+    provider = new ethers.BrowserProvider(walletProvider);
+    signer = await provider.getSigner();
+
+    const address = await signer.getAddress();
+
+    document.getElementById("wallet").innerText =
+      "Connected: " + address + " 🌊";
+  } catch (err) {
+    alert("Connection failed");
   }
 };
 
-window.onload = function () {
-  web3Modal = new window.Web3Modal.default({
-    cacheProvider: false,
-    providerOptions
-  });
-};
+function loadPfp() {
+  let user = document.getElementById("username").value;
+  let url = `https://unavatar.io/twitter/${user}`;
 
-async function connectWallet() {
-  const instance = await web3Modal.connect();
-  provider = new ethers.providers.Web3Provider(instance);
-  signer = provider.getSigner();
+  document.getElementById("preview").innerHTML =
+    `<div class="badge"><img src="${url}"/></div>`;
+}
+
+async function mint() {
+  if (!signer) {
+    alert("Connect wallet first");
+    return;
+  }
+
+  try {
+    const tx = await signer.sendTransaction({
+      to: "0x656F533830C5F1E53E1385722032BbA9eB3eBA22",
+      value: ethers.parseEther("0.001")
+    });
+
+    await tx.wait();
+
+    alert("✅ Minted on Seismic 🌊");
+  } catch (err) {
+    alert("Transaction failed");
+  }
+}
+</script>
+
+</body>
+</html>  signer = provider.getSigner();
 
   const address = await signer.getAddress();
   document.getElementById("wallet").innerText =
