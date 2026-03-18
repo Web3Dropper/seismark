@@ -3,7 +3,6 @@
 <head>
   <title>SeisMark</title>
 
-  <!-- ethers library -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
 
   <style>
@@ -53,6 +52,7 @@
     }
   </style>
 </head>
+
 <body>
 
 <h1>🌊 SeisMark</h1>
@@ -74,10 +74,34 @@
 let signer;
 let userAddress;
 
+// 🔗 CONNECT + AUTO SEISMIC
 async function connectWallet() {
   if (!window.ethereum) {
     alert("Install MetaMask");
     return;
+  }
+
+  const chainId = "0x1404";
+
+  try {
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId }],
+    });
+  } catch (error) {
+    await window.ethereum.request({
+      method: "wallet_addEthereumChain",
+      params: [{
+        chainId: chainId,
+        chainName: "Seismic Testnet",
+        rpcUrls: ["https://gcp-2.seismictest.net/rpc"],
+        nativeCurrency: {
+          name: "ETH",
+          symbol: "ETH",
+          decimals: 18
+        }
+      }]
+    });
   }
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -87,9 +111,10 @@ async function connectWallet() {
   userAddress = await signer.getAddress();
 
   document.getElementById("wallet").innerText =
-    "Connected: " + userAddress;
+    "Connected: " + userAddress + " 🌊";
 }
 
+// 🖼️ LOAD PFP
 function loadPfp() {
   let user = document.getElementById("username").value;
   let url = `https://unavatar.io/twitter/${user}`;
@@ -98,7 +123,7 @@ function loadPfp() {
     `<div class="badge"><img src="${url}"/></div>`;
 }
 
-// 🔥 FAKE mint (real fee transfer)
+// 💰 MINT = PAYMENT
 async function mint() {
   if (!signer) {
     alert("Connect wallet first");
@@ -107,13 +132,13 @@ async function mint() {
 
   try {
     const tx = await signer.sendTransaction({
-      to: "YOUR_WALLET_ADDRESS", // 👈 apna address daal
+      to: "0x656F533830C5F1E53E1385722032BbA9eB3eBA22",
       value: ethers.utils.parseEther("0.001")
     });
 
     await tx.wait();
 
-    alert("✅ Mint Success (Fee Sent)");
+    alert("✅ SeisMark Minted on Seismic 🌊");
   } catch (err) {
     alert("❌ Transaction failed");
   }
