@@ -3,7 +3,6 @@
 <head>
   <title>SeisMark</title>
 
-  <!-- Ethers -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
 
   <style>
@@ -11,47 +10,47 @@
       margin: 0;
       background: radial-gradient(circle, #0d0d0d, #000);
       color: white;
-      text-align: center;
       font-family: Arial;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
     }
 
     .container {
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
       padding: 20px;
     }
 
     h1 {
-      font-size: 28px;
-      margin-top: 20px;
-    }
-
-    .logo {
-      width: 60px;
-      margin-top: 20px;
-      filter: drop-shadow(0 0 10px #ff00ff);
+      font-size: 26px;
     }
 
     input {
+      width: 100%;
       padding: 12px;
-      width: 80%;
       border-radius: 12px;
       border: none;
       margin-top: 10px;
     }
 
     button {
-      margin-top: 15px;
-      padding: 12px 25px;
+      width: 100%;
+      margin-top: 12px;
+      padding: 12px;
       border: none;
-      border-radius: 25px;
+      border-radius: 20px;
       background: linear-gradient(45deg, #ff00ff, #00ffff);
       color: white;
       font-size: 16px;
     }
 
     .badge {
-      margin: 30px auto;
-      width: 160px;
-      height: 160px;
+      margin: 25px auto;
+      width: 150px;
+      height: 150px;
       border-radius: 50%;
       padding: 6px;
       background: linear-gradient(45deg, #ff00ff, #00ffff);
@@ -67,6 +66,12 @@
       from { box-shadow: 0 0 10px #ff00ff; }
       to { box-shadow: 0 0 35px #00ffff; }
     }
+
+    @media (min-width: 768px) {
+      .container {
+        max-width: 500px;
+      }
+    }
   </style>
 </head>
 
@@ -74,10 +79,7 @@
 
 <div class="container">
 
-<!-- 🔥 LOGO -->
-<img class="logo" src="https://i.imgur.com/8Km9tLL.png" />
-
-<h1>SeisMark</h1>
+<h1>🌊 SeisMark</h1>
 <p>Proof of Seismic Contribution</p>
 
 <button onclick="connectWallet()">🔗 Connect Wallet</button>
@@ -97,11 +99,34 @@
 let provider;
 let signer;
 
-// CONNECT WALLET (simple & stable)
+// 🔗 CONNECT + FORCE SEISMIC
 async function connectWallet() {
   if (!window.ethereum) {
-    alert("Install MetaMask / Trust Wallet");
+    alert("Install wallet");
     return;
+  }
+
+  const chainId = "0x1404";
+
+  try {
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId }]
+    });
+  } catch (err) {
+    await window.ethereum.request({
+      method: "wallet_addEthereumChain",
+      params: [{
+        chainId: chainId,
+        chainName: "Seismic Testnet",
+        rpcUrls: ["https://gcp-2.seismictest.net/rpc"],
+        nativeCurrency: {
+          name: "ETH",
+          symbol: "ETH",
+          decimals: 18
+        }
+      }]
+    });
   }
 
   provider = new ethers.BrowserProvider(window.ethereum);
@@ -111,10 +136,10 @@ async function connectWallet() {
   const address = await signer.getAddress();
 
   document.getElementById("wallet").innerText =
-    "Connected: " + address;
+    "Connected: " + address + " 🌊";
 }
 
-// LOAD PFP
+// 🖼️ LOAD PFP
 function loadPfp() {
   let user = document.getElementById("username").value;
   let url = `https://unavatar.io/twitter/${user}`;
@@ -123,7 +148,7 @@ function loadPfp() {
     `<div class="badge"><img src="${url}"/></div>`;
 }
 
-// MINT (payment)
+// 💰 MINT FIXED
 async function mint() {
   if (!signer) {
     alert("Connect wallet first");
@@ -133,14 +158,15 @@ async function mint() {
   try {
     const tx = await signer.sendTransaction({
       to: "0x656F533830C5F1E53E1385722032BbA9eB3eBA22",
-      value: ethers.parseEther("0.001")
+      value: ethers.parseEther("0.0001") // 👈 kam kar diya
     });
 
     await tx.wait();
 
-    alert("✅ Mint Success 🌊");
+    alert("✅ Mint success on Seismic 🌊");
   } catch (err) {
-    alert("❌ Transaction failed");
+    console.log(err);
+    alert("❌ Failed: Check network or balance");
   }
 }
 </script>
