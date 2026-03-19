@@ -19,13 +19,13 @@
 
     .container {
       width: 100%;
-      max-width: 420px;
+      max-width: 500px;
       text-align: center;
       padding: 20px;
     }
 
     h1 {
-      font-size: 26px;
+      font-size: 28px;
     }
 
     input {
@@ -45,6 +45,7 @@
       background: linear-gradient(45deg, #ff00ff, #00ffff);
       color: white;
       font-size: 16px;
+      cursor: pointer;
     }
 
     .badge {
@@ -62,15 +63,22 @@
       border-radius: 50%;
     }
 
-    @keyframes glow {
-      from { box-shadow: 0 0 10px #ff00ff; }
-      to { box-shadow: 0 0 35px #00ffff; }
+    .grid {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
     }
 
-    @media (min-width: 768px) {
-      .container {
-        max-width: 500px;
-      }
+    .card {
+      background: #111;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    @keyframes glow {
+      from { box-shadow: 0 0 10px #ff00ff; }
+      to { box-shadow: 0 0 30px #00ffff; }
     }
   </style>
 </head>
@@ -91,7 +99,9 @@
 
 <div id="preview"></div>
 
-<button onclick="mint()">Mint SeisMark</button>
+<button onclick="mint()">Mint NFT</button>
+
+<div class="grid" id="gallery"></div>
 
 </div>
 
@@ -99,10 +109,16 @@
 let provider;
 let signer;
 
-// 🔗 CONNECT + FORCE SEISMIC
+const contractAddress = "0x291653CF72cf83BAb4EDB661C9cC63dD391A4aaB";
+
+const abi = [
+  "function mint(string memory _uri) public payable"
+];
+
+// 🔗 CONNECT WALLET + SEISMIC
 async function connectWallet() {
   if (!window.ethereum) {
-    alert("Install wallet");
+    alert("Install MetaMask");
     return;
   }
 
@@ -136,7 +152,7 @@ async function connectWallet() {
   const address = await signer.getAddress();
 
   document.getElementById("wallet").innerText =
-    "Connected: " + address + " 🌊";
+    "Connected: " + address;
 }
 
 // 🖼️ LOAD PFP
@@ -148,26 +164,40 @@ function loadPfp() {
     `<div class="badge"><img src="${url}"/></div>`;
 }
 
-// 💰 MINT FIXED
+// 🚀 MINT NFT
 async function mint() {
   if (!signer) {
     alert("Connect wallet first");
     return;
   }
 
+  let user = document.getElementById("username").value;
+  let img = `https://unavatar.io/twitter/${user}`;
+
   try {
-    const tx = await signer.sendTransaction({
-      to: "0x656F533830C5F1E53E1385722032BbA9eB3eBA22",
-      value: ethers.parseEther("0.0001") // 👈 kam kar diya
+    const contract = new ethers.Contract(contractAddress, abi, signer);
+
+    const tx = await contract.mint(img, {
+      value: ethers.parseEther("0.0001")
     });
 
     await tx.wait();
 
-    alert("✅ Mint success on Seismic 🌊");
+    addToGallery(img);
+
+    alert("✅ NFT Minted Successfully 🌊");
   } catch (err) {
     console.log(err);
-    alert("❌ Failed: Check network or balance");
+    alert("❌ Mint failed");
   }
+}
+
+// 🖼️ ADD TO UI
+function addToGallery(img) {
+  let div = document.createElement("div");
+  div.className = "card";
+  div.innerHTML = `<img src="${img}" /><p>SeisMark</p>`;
+  document.getElementById("gallery").appendChild(div);
 }
 </script>
 
